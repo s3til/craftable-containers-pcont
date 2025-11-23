@@ -10,7 +10,7 @@ namespace _PCont;
 // This record holds the various properties for your mod
 public record ModMetadata : AbstractModMetadata
 {
-    public override string ModGuid { get; init; } = "com.s3til.PCont";
+    public override string ModGuid { get; init; } = "com.s3til.pcont";
     public override string Name { get; init; } = "PCont";
     public override string Author { get; init; } = "s3til";
     public override SemanticVersioning.Version Version { get; init; } = new("1.0.0");
