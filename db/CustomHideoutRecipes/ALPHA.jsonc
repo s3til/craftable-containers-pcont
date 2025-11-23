@@ -1,0 +1,68 @@
+{
+  "_id": "E7253E1FF70A72F4362A86E8", //pouch2alpha
+  "areaType": 2, //lavatory
+  "requirements": [
+    {
+      "areaType": 2,
+      "requiredLevel": 1,
+      "type": "Area"
+    },
+    {
+      "templateId": "5732ee6a24597719ae0c0281", //waistpouch
+      "count": 1,
+      "isFunctional": false,
+      "isEncoded": false,
+      "type": "Item"
+    },
+    {
+      "templateId": "57347c1124597737fb1379e3", //greytape
+      "count": 3,
+      "isFunctional": false,
+      "isEncoded": false,
+      "type": "Item"
+    },
+    {
+      "templateId": "61bf7b6302b3924be92fa8c3", //mparts
+      "count": 5,
+      "isFunctional": false,
+      "isEncoded": false,
+      "type": "Item"
+    },
+    {
+      "templateId": "5e2af22086f7746d3f3c33fa", //poxeram
+      "count": 2,
+      "isFunctional": false,
+      "isEncoded": false,
+      "type": "Item"
+    },
+    {
+      "templateId": "57347c77245977448d35f6e2", //nuts
+      "count": 4,
+      "isFunctional": false,
+      "isEncoded": false,
+      "type": "Item"
+    },
+    {
+      "templateId": "57347c5b245977448d35f6e1", //bolts
+      "count": 4,
+      "isFunctional": false,
+      "isEncoded": false,
+      "type": "Item"
+    },
+    {
+      "templateId": "5449016a4bdc2d6f028b456f", //cash
+      "count": 50000,
+      "isFunctional": false,
+      "isEncoded": false,
+      "type": "Item"
+    }
+  ],
+  "productionTime": 120,
+  "needFuelForAllProductionTime": true,
+  "locked": false,
+  "endProduct": "544a11ac4bdc2d470e8b456a", //alpha
+  "continuous": false,
+  "count": 1,
+  "productionLimitCount": 0,
+  "isEncoded": false
+} 
