@@ -13,13 +13,13 @@ public record ModMetadata : AbstractModMetadata
     public override string ModGuid { get; init; } = "com.s3til.pcont";
     public override string Name { get; init; } = "PCont";
     public override string Author { get; init; } = "s3til";
-    public override SemanticVersioning.Version Version { get; init; } = new("1.0.0");
-    public override Range SptVersion { get; init; } = new("4.0.6");
+    public override SemanticVersioning.Version Version { get; init; } = new("1.0.1");
+    public override Range SptVersion { get; init; } = new("4.0.7");
     public override string License { get; init; } = "MIT";
     public override bool? IsBundleMod { get; init; } = true;
     public override Dictionary<string, Range>? ModDependencies { get; init; } = new()
     {
-        { "com.wtt.commonlib", new Range("~2.0.0") }
+        { "com.wtt.commonlib", new Range("2.0.5") }
     };
     public override string? Url { get; init; }
     public override List<string>? Contributors { get; init; }
