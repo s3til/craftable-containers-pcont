@@ -1,0 +1,4 @@
+{
+  "EditTrader": true, //false disables the additional barter
+  "ContainerForTrade": "alpha" //changes the container of the barter for different editions. acceptable inputs: alpha, beta, gamma, unheardgamma
+}
