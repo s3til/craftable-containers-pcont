@@ -1,66 +1,50 @@
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.DI;
 using SPTarkov.Server.Core.Helpers;
 using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
+using SPTarkov.Server.Core.Models.Eft.Hideout;
 using SPTarkov.Server.Core.Models.Spt.Config;
 using SPTarkov.Server.Core.Models.Spt.Mod;
+using SPTarkov.Server.Core.Models.Spt.Server;
 using SPTarkov.Server.Core.Models.Utils;
+using SPTarkov.Server.Core.Servers;
 using SPTarkov.Server.Core.Services;
 using SPTarkov.Server.Core.Utils;
 using System.IO;
 using System.Reflection;
 using Path = System.IO.Path;
 using Range = SemanticVersioning.Range;
-
-
 namespace _PCont;
-
-// This record holds the various properties for your mod
 public record ModMetadata : AbstractModMetadata
 {
     public override string ModGuid { get; init; } = "com.s3til.pcont";
     public override string Name { get; init; } = "PCont";
     public override string Author { get; init; } = "s3til";
-    public override SemanticVersioning.Version Version { get; init; } = new("1.1.2");
-    public override Range SptVersion { get; init; } = new("~4.0.7"); //todo figure out how to make tis not brick the mod every update: done!
+    public override SemanticVersioning.Version Version { get; init; } = new("1.2.0");
+    public override Range SptVersion { get; init; } = new("~4.0.8");
     public override string License { get; init; } = "MIT";
     public override bool? IsBundleMod { get; init; } = true;
-    public override Dictionary<string, Range>? ModDependencies { get; init; } = new()
-    {
-        { "com.wtt.commonlib", new Range("~2.0.5") }
-    };
     public override string? Url { get; init; }
     public override List<string>? Contributors { get; init; }
     public override List<string>? Incompatibilities { get; init; }
+    public override Dictionary<string, Range>? ModDependencies { get; init; }
 }
-
-/// <summary>
-/// Feel free to use this as a base for your mod
-/// </summary>
 [Injectable(TypePriority = OnLoadOrder.PostDBModLoader + 2)]
-public class PCon(WTTServerCommonLib.WTTServerCommonLib wttCommon, ISptLogger<PCon> logger, DatabaseService databaseService, ModHelper modHelper) : IOnLoad
+public class PCon(ISptLogger<PCon> logger, DatabaseService databaseService, ModHelper modHelper, DatabaseServer databaseServer, JsonUtil jsonUtil) : IOnLoad
 {
     private ModConfig? _modConfig;
     public async Task OnLoad()
     {
-
-        // Get your current assembly
         var assembly = Assembly.GetExecutingAssembly();
-
-        var path = modHelper.GetAbsolutePathToModFolder(Assembly.GetExecutingAssembly());
-        var configPath = Path.Combine(path, "config");
+        var assemblypath = modHelper.GetAbsolutePathToModFolder(assembly);
+        var configPath = Path.Combine(assemblypath, "config");
         _modConfig = modHelper.GetJsonDataFromFile<ModConfig>(configPath, "barter.jsonc");
-
-
-
-            // Use WTT-CommonLib services
-            await wttCommon.CustomHideoutRecipeService.CreateHideoutRecipes(assembly);
-
+        await CreateHideoutRecipes(assembly);
         if (_modConfig.EditTrader) 
         {
             EditTraders();//add barter
-
             if (_modConfig.ContainerForTrade == "alpha") //check config validity
             { }
             else if (_modConfig.ContainerForTrade == "beta")
@@ -76,9 +60,46 @@ public class PCon(WTTServerCommonLib.WTTServerCommonLib wttCommon, ISptLogger<PC
         }
         //message success
         logger.Success("craftable containers loaded successfully. happy crafting!");
-
         await Task.CompletedTask;
     }
+
+    private DatabaseTables? _database; //grabbing database for later 
+    public async Task CreateHideoutRecipes(Assembly assembly)
+    {
+        var assemblypath = modHelper.GetAbsolutePathToModFolder(assembly);
+        var recpath = Path.Combine("config", "recipes");
+        var finalPath = Path.Combine(assemblypath, recpath); //get config file paths
+        _database = databaseServer.GetTables(); //loadup database tables
+        var recipies = new List<HideoutProduction>(); //get the recipies ready
+        var configfiles = Directory.GetFiles(finalPath, "*.jsonc", SearchOption.AllDirectories); //get the configfiles
+        foreach (var recipe in configfiles) //foreach recipe
+        {
+                var recFile = await File.ReadAllTextAsync(recipe); //read the config file
+                var contcraft = jsonUtil.Deserialize<HideoutProduction>(recFile); //deserialize it
+                if (contcraft != null) //make sure it isnt blank
+                {
+                    recipies.Add(contcraft); //add it to our list of recipies to add
+                    logger.Success($"loaded {Path.GetFileName(recipe)} successfully"); //celebrate
+                }
+                else
+                {
+                    logger.Warning($"error in {Path.GetFileName(recipe)}"); //don't celebrate
+                }
+                if (recipies.Count == 7)
+                    logger.Info("added all new crafts successfully"); //celebrate again!
+            }
+foreach (var container in recipies) //load up the recipies into the game
+            {  
+            var recipeExists = _database.Hideout.Production.Recipes != null &&
+                               _database.Hideout.Production.Recipes.Any(r => r.Id == container.Id);
+            if (recipeExists)
+            {
+                continue;
+            } //make sure they dont crash the game
+
+            _database.Hideout.Production.Recipes?.Add(container); //add your handiwork into the hideout
+            }
+        }
 private void EditTraders() //SVM taught me this one :) thanks GhostFenixx for all your hard work!!
     {
         MongoId uid = new(); //im too busy to make a new MongoID
@@ -120,13 +141,10 @@ private void EditTraders() //SVM taught me this one :) thanks GhostFenixx for al
         traders["5ac3b934156ae10c4430e83c"].Assort.BarterScheme.Add(uid, barter);
         traders["5ac3b934156ae10c4430e83c"].Assort.LoyalLevelItems.Add(uid, 1);
         //add to all three needed areas (rando 5ac thing is Ragman's trader id)
-
-
     }
     public class ModConfig
     {
         public Boolean EditTrader { get; set; }
         public required string ContainerForTrade { get; set; }
-
     }
 }
